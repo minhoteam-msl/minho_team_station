@@ -560,6 +560,14 @@ void MainWindow::onRefBoxData()
         if(isCyan && command[0].isUpper()) mBsInfo.gamestate = sPRE_OWN_PENALTY;
         else if(!isCyan && command[0].isLower()) mBsInfo.gamestate = sPRE_OWN_PENALTY;
         else mBsInfo.gamestate = sPRE_THEIR_PENALTY;
+    }else if(command == "T" || command == "t"){ // throw in
+        if(isCyan && command[0].isUpper()) mBsInfo.gamestate = sPRE_OWN_THROWIN;
+        else if(!isCyan && command[0].isLower()) mBsInfo.gamestate = sPRE_OWN_THROWIN;
+        else mBsInfo.gamestate = sPRE_THEIR_THROWIN;
+    }else if(command == "C" || command == "c"){ // corner
+        if(isCyan && command[0].isUpper()) mBsInfo.gamestate = sPRE_OWN_CORNER;
+        else if(!isCyan && command[0].isLower()) mBsInfo.gamestate = sPRE_OWN_CORNER;
+        else mBsInfo.gamestate = sPRE_THEIR_CORNER;
     }else mBsInfo.gamestate = sSTOPPED;
 }
 
