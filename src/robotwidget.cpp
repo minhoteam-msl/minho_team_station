@@ -10,11 +10,17 @@ robotWidget::robotWidget(QWidget *parent) :
     ui(new Ui::robotWidget)
 {
     ui->setupUi(this);
+    auto_role = true;
 }
 
 robotWidget::~robotWidget()
 {
     delete ui;
+}
+
+void robotWidget::setCurrentRole(int role)
+{
+    ui->cb_role->setCurrentIndex(role);
 }
 
 void robotWidget::setRobotId(unsigned int id)
@@ -68,4 +74,12 @@ void robotWidget::on_bt_reloc_clicked()
 void robotWidget::on_bt_resetimu_clicked()
 {
     emit resetIMURequested(agent_id);
+}
+
+void robotWidget::on_bt_auto_roles_clicked()
+{
+    if(auto_role) ui->bt_auto_roles->setText("Auto OFF");
+    else ui->bt_auto_roles->setText("Auto ON");
+    auto_role = !auto_role;
+    emit auto_roles(agent_id);
 }

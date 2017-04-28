@@ -52,6 +52,7 @@ public:
     void closeEvent(QCloseEvent *event);
     /// \brief function to setup graphical stuff in ui
     void setupGraphicsUI();
+
 private:
     /// \brief function that reads msg_id parameter in packet and returns true if msg_id = 1 (is interAgentInfo)
     bool isAgentInfoMessage(udp_packet *packet);
@@ -81,6 +82,10 @@ private:
     void setBallPosition(int ball_id, float x, float y,float z);
     /// \brief function to connect via TCP socket to refbox
     bool connectToRefBox();
+
+    int getRobotByRole(int role);
+
+
 private slots:
     /// \brief function that detects if a robot is online or offline based on received packets
     void detectRobotsState();
@@ -110,6 +115,10 @@ private slots:
     void onResetIMURequest(int id);
     ///  \function to merge ball pose
     void merge_ball_pose();
+    /// auto roles ON/OFF
+    void set_auto_roles(int id);
+
+    void setOwnGameBall();
 signals:
     void newRobotInformationReceived(int agent_id);
 private:
@@ -158,8 +167,10 @@ private:
     VisualPtr obstacleVisual;
     /// \brief vector of obstacles drawn on scene
     std::vector<VisualPtr> sceneObstacles;
-    //Old ball pose
-    float old_x_ball,old_y_ball;
+    /// Auto roles bool
+    bool auto_role_vec[NROBOTS];
+
+    QTimer *timeOwnGameBall;
 };
 
 #endif // MAINWINDOW_H

@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include "multicastpp.h"
 
-
 ///
 /// SIGNAL newRobotInformationReceived is triggered when new information is received from RTDB
 ///
@@ -27,6 +26,17 @@ MainWindow::MainWindow(bool isOfficialField, Multicastpp *coms, QWidget *parent)
     mBsInfo.requests.resize(NROBOTS);
     mBsInfo.gamestate = sSTOPPED;
     mBsInfo.posxside = false;
+
+    auto_role_vec[0] = true;
+    auto_role_vec[1] = true;
+    auto_role_vec[2] = true;
+    auto_role_vec[3] = true;
+    auto_role_vec[4] = true;
+
+    mBsInfo.roles[0] = rGOALKEEPER;
+    mBsInfo.roles[3] = rSUP_STRIKER;
+    mBsInfo.roles[4] = rSTRIKER;
+
     on_bt_side_clicked();
 
     rtdb = coms;
@@ -53,10 +63,13 @@ MainWindow::MainWindow(bool isOfficialField, Multicastpp *coms, QWidget *parent)
 
     robotStateDetector = new QTimer();
     sendDataTimer = new QTimer();
+    timeOwnGameBall = new QTimer();
+    connect(timeOwnGameBall,SIGNAL(timeout()),this,SLOT(setOwnGameBall()));
     connect(robotStateDetector,SIGNAL(timeout()),this,SLOT(detectRobotsState()));
     connect(sendDataTimer,SIGNAL(timeout()),this,SLOT(sendBaseStationUpdate()));
     robotStateDetector->start(300);
     on_comboBox_activated(0);
+
 }
 
 MainWindow::~MainWindow()
@@ -122,6 +135,12 @@ void MainWindow::setupGraphicsUI()
     connect(ui->r4widget,SIGNAL(resetIMURequested(int)),this,SLOT(onResetIMURequest(int)));
     connect(ui->r5widget,SIGNAL(relocRequested(int)),this,SLOT(onRelocRequest(int)));
     connect(ui->r5widget,SIGNAL(resetIMURequested(int)),this,SLOT(onResetIMURequest(int)));
+
+    connect(ui->r1widget,SIGNAL(auto_roles(int)),this,SLOT(set_auto_roles(int)));
+    connect(ui->r2widget,SIGNAL(auto_roles(int)),this,SLOT(set_auto_roles(int)));
+    connect(ui->r3widget,SIGNAL(auto_roles(int)),this,SLOT(set_auto_roles(int)));
+    connect(ui->r4widget,SIGNAL(auto_roles(int)),this,SLOT(set_auto_roles(int)));
+    connect(ui->r5widget,SIGNAL(auto_roles(int)),this,SLOT(set_auto_roles(int)));
 }
 
 void MainWindow::updateAgentInfo(void *packet)
@@ -221,6 +240,15 @@ void MainWindow::merge_ball_pose()
       }
 }
 
+int MainWindow::getRobotByRole(int role)
+{
+  for(int i =0;i<NROBOTS;i++){
+    if(mBsInfo.roles[i]==role) return i;
+  }
+
+  return 0;
+}
+
 void MainWindow::sendBaseStationUpdate()
 {
     static int count = 0;
@@ -231,11 +259,30 @@ void MainWindow::sendBaseStationUpdate()
     ui->statusBar->showMessage("Ξ Rendering at "+QString::number(ui->gzwidget->getAverageFPS())+" fps");
     // Update Roles from robot widgets
     for(unsigned int rob=0;rob<NROBOTS;rob++) {
-        mBsInfo.roles[rob] = robwidgets[rob]->getCurrentRole();
+        if(!auto_role_vec[rob]) mBsInfo.roles[rob] = robwidgets[rob]->getCurrentRole();
         if(robotState[rob] && robwidgets[rob]) robwidgets[rob]->updateInformation(robots[rob].ai_info,robots[rob].hardware_info,recvFreqs[rob]);
     }
 
     /////////////////////////////////////////////////////////////
+
+    if(auto_role_vec[0]) mBsInfo.roles[0] = rGOALKEEPER;
+
+    if(auto_role_vec[1]) mBsInfo.roles[1] = rSUP_STRIKER;
+    if(auto_role_vec[2]) mBsInfo.roles[2] = rSTRIKER;
+
+    if(auto_role_vec[3]) mBsInfo.roles[3] = rSUP_STRIKER;
+    if(auto_role_vec[4]) mBsInfo.roles[4] = rSTRIKER;
+
+    for(unsigned int rob=0;rob<NROBOTS;rob++) {
+    if(auto_role_vec[rob]) robwidgets[rob]->setCurrentRole(mBsInfo.roles[rob]);
+    }
+
+
+    /*
+    if(mBsInfo.gamestate == sOWN_KICKOFF && robots[getRobotByRole(rSTRIKER)].agent_info.robot_info.has_ball){
+      mBsInfo.gamestate = sGAME_OWN_BALL;
+    }
+    */
 
     merge_ball_pose();
 
@@ -290,7 +337,7 @@ bool MainWindow::runGzServer()
     std::string gz = "/usr/bin/gzserver";
     args.push_back(worldfilename);
     // add mathching world file
-    if(run_gz!=NULL){run_gz->terminate(true); delete run_gz; run_gz = NULL;}
+    //if(run_gz!=NULL){run_gz->terminate(true); delete run_gz; run_gz = NULL;}
     std::map<int,boost::process::handle> a;
     run_gz = new boost::process::child(0,a);
     (*run_gz) = boost::process::create_child(gz, args, ctx);
@@ -365,7 +412,7 @@ void MainWindow::updateGraphics()
         } else {
             // hide stuff from robot i
             setVisibilityRobotGraphics(i,false);
-            mBsInfo.roles[i] = rSTOP;
+            //mBsInfo.roles[i] = rSTOP;
             data_timers[i].restart();
             //jsonLogger->removeRobot(robots[i].agent_id);
         }
@@ -544,6 +591,7 @@ void MainWindow::onRefBoxData()
         if(command=="h") on_bt_side_clicked();
     } else if(command == "s" || command == "1s" || command == "2s"){ //start
         mBsInfo.gamestate++;
+        timeOwnGameBall->start(7000);
     } else if(command == "K" || command == "k"){ // kickoff
         if(isCyan && command[0].isUpper()) mBsInfo.gamestate = sPRE_OWN_KICKOFF;
         else if(!isCyan && command[0].isLower()) mBsInfo.gamestate = sPRE_OWN_KICKOFF;
@@ -608,4 +656,16 @@ void MainWindow::onRelocRequest(int id)
 void MainWindow::onResetIMURequest(int id)
 {
     mBsInfo.requests[id-1] = 2;
+}
+
+void MainWindow::set_auto_roles(int id)
+{
+    auto_role_vec[id-1] = !auto_role_vec[id-1];
+    //qDebug() << "Auto roles: " << id-1 << " state: " << auto_role_vec[id-1];
+}
+
+void MainWindow::setOwnGameBall()
+{
+    mBsInfo.gamestate = sGAME_OWN_BALL;
+    timeOwnGameBall->stop();
 }
