@@ -19,6 +19,7 @@ MainWindow::MainWindow(bool isOfficialField, Multicastpp *coms, QWidget *parent)
     setupGraphicsUI();
     connectToRefBox();
 
+    preGame = false;
     isCyan = false;
     on_bt_team_clicked();
 
@@ -27,15 +28,22 @@ MainWindow::MainWindow(bool isOfficialField, Multicastpp *coms, QWidget *parent)
     mBsInfo.gamestate = sSTOPPED;
     mBsInfo.posxside = false;
 
-    auto_role_vec[0] = true;
-    auto_role_vec[1] = true;
-    auto_role_vec[2] = true;
-    auto_role_vec[3] = true;
-    auto_role_vec[4] = true;
+    iGOALKEEPER = 0;
+    iDEFENDERL = 1;
+    iDEFENDERR = 2;
+    iSUP_STRIKER = 3;
+    iSTRIKER = 4;
 
-    mBsInfo.roles[0] = rGOALKEEPER;
-    mBsInfo.roles[3] = rSUP_STRIKER;
-    mBsInfo.roles[4] = rSTRIKER;
+    auto_role_vec[iGOALKEEPER] = true;
+    auto_role_vec[iDEFENDERL] = true;
+    auto_role_vec[iDEFENDERR] = true;
+    auto_role_vec[iSUP_STRIKER] = true;
+    auto_role_vec[iSTRIKER] = true;
+
+
+    mBsInfo.roles[iGOALKEEPER] = rGOALKEEPER;
+    mBsInfo.roles[iSTRIKER] = rSUP_STRIKER;
+    mBsInfo.roles[iSUP_STRIKER] = rSTRIKER;
 
     on_bt_side_clicked();
 
@@ -265,18 +273,47 @@ void MainWindow::sendBaseStationUpdate()
 
     /////////////////////////////////////////////////////////////
 
-    if(auto_role_vec[0]) mBsInfo.roles[0] = rGOALKEEPER;
-
-    if(auto_role_vec[1]) mBsInfo.roles[1] = rSUP_STRIKER;
-    if(auto_role_vec[2]) mBsInfo.roles[2] = rSTRIKER;
-
-    if(auto_role_vec[3]) mBsInfo.roles[3] = rSUP_STRIKER;
-    if(auto_role_vec[4]) mBsInfo.roles[4] = rSTRIKER;
-
-    for(unsigned int rob=0;rob<NROBOTS;rob++) {
-    if(auto_role_vec[rob]) robwidgets[rob]->setCurrentRole(mBsInfo.roles[rob]);
+    if(robots[iSTRIKER].hardware_info.free_wheel_activated)
+    {
+        if(!robots[iSUP_STRIKER].hardware_info.free_wheel_activated)
+        {
+          int tmp = iSUP_STRIKER;
+          iSUP_STRIKER = iSTRIKER;
+          iSTRIKER = tmp;
+        }
     }
 
+    if(mBsInfo.gamestate == sGAME_OWN_BALL)
+    {
+       //float distance_striker_ball = sqrt((robots[iSTRIKER].agent_info.robot_info.ball_position.x-robots[iSTRIKER].agent_info.robot_info.robot_pose.x)*(robots[iSTRIKER].agent_info.robot_info.ball_position.x-robots[iSTRIKER].agent_info.robot_info.robot_pose.x)+
+       //(robots[iSTRIKER].agent_info.robot_info.ball_position.y-robots[iSTRIKER].agent_info.robot_info.robot_pose.y)*(robots[iSTRIKER].agent_info.robot_info.ball_position.y-robots[iSTRIKER].agent_info.robot_info.robot_pose.y));
+
+       float distance_sup_striker_ball = sqrt((robots[iSUP_STRIKER].agent_info.robot_info.ball_position.x-robots[iSUP_STRIKER].agent_info.robot_info.robot_pose.x)*(robots[iSUP_STRIKER].agent_info.robot_info.ball_position.x-robots[iSUP_STRIKER].agent_info.robot_info.robot_pose.x)+
+       (robots[iSUP_STRIKER].agent_info.robot_info.ball_position.y-robots[iSUP_STRIKER].agent_info.robot_info.robot_pose.y)*(robots[iSUP_STRIKER].agent_info.robot_info.ball_position.y-robots[iSUP_STRIKER].agent_info.robot_info.robot_pose.y));
+
+        if((!robots[iSTRIKER].agent_info.robot_info.sees_ball && !robots[iSTRIKER].agent_info.robot_info.has_ball))
+        {
+          if((robots[iSUP_STRIKER].agent_info.robot_info.sees_ball || robots[iSUP_STRIKER].agent_info.robot_info.has_ball) &&  distance_sup_striker_ball < 2)
+          {
+            int tmp = iSUP_STRIKER;
+            iSUP_STRIKER = iSTRIKER;
+            iSTRIKER = tmp;
+          }
+        }
+    }
+
+    if(auto_role_vec[iGOALKEEPER]) mBsInfo.roles[iGOALKEEPER] = rGOALKEEPER;
+
+    if(auto_role_vec[iDEFENDERL]) mBsInfo.roles[iDEFENDERL] = rSUP_STRIKER;
+    if(auto_role_vec[iDEFENDERR]) mBsInfo.roles[iDEFENDERR] = rSTRIKER;
+
+    if(auto_role_vec[iSUP_STRIKER]) mBsInfo.roles[iSUP_STRIKER] = rSUP_STRIKER;
+    if(auto_role_vec[iSTRIKER]) mBsInfo.roles[iSTRIKER] = rSTRIKER;
+
+    for(unsigned int rob=0;rob<NROBOTS;rob++)
+    {
+      if(auto_role_vec[rob]) robwidgets[rob]->setCurrentRole(mBsInfo.roles[rob]);
+    }
 
     /*
     if(mBsInfo.gamestate == sOWN_KICKOFF && robots[getRobotByRole(rSTRIKER)].agent_info.robot_info.has_ball){
@@ -577,22 +614,74 @@ void MainWindow::onRefBoxData()
 {
     QString command = refboxSocket->readAll();
     ROS_INFO("Received %s",command.toStdString().c_str());
-    if(command == "S"){ // stop,end part or end half
+    if(command == "S")
+    { // stop,end part or end half
         mBsInfo.gamestate = sSTOPPED;
-    } else if(command == "W"){ // on connection with refbox
+    }
+    else if(command == "W")
+    { // on connection with refbox
         refboxConnected = true;
         ui->lb_refstate->setStyleSheet("color:green;");
         ui->lb_refstate->setFont(ui->bt_team->font());
-    }else if(command == "e" || command == "h"){ // end part or end half
+    }
+    else if(command == "e" || command == "h")
+    { // end part or end half
         mBsInfo.gamestate = sSTOPPED;
+        timeOwnGameBall->stop();
         if(command=="h") on_bt_side_clicked();
-    } else if(command == "L"){ // parking
+    }
+    else if(command == "L")
+    { // parking
         mBsInfo.gamestate = sPARKING;
         if(command=="h") on_bt_side_clicked();
-    } else if(command == "s" || command == "1s" || command == "2s"){ //start
-        mBsInfo.gamestate++;
+    }
+    else if(command == "s" || command == "1s" || command == "2s")
+    { //start
+        switch (mBsInfo.gamestate) {
+          case sPRE_OWN_KICKOFF:
+          mBsInfo.gamestate = sOWN_KICKOFF;
+          break;
+          case sPRE_THEIR_KICKOFF:
+          mBsInfo.gamestate = sTHEIR_KICKOFF;
+          break;
+          case sPRE_OWN_GOALKICK:
+          mBsInfo.gamestate = sOWN_GOALKICK;
+          break;
+          case sPRE_THEIR_GOALKICK:
+          mBsInfo.gamestate = sTHEIR_GOALKICK;
+          break;
+          case sPRE_OWN_FREEKICK:
+          mBsInfo.gamestate = sOWN_FREEKICK;
+          break;
+          case sPRE_THEIR_FREEKICK:
+          mBsInfo.gamestate = sTHEIR_FREEKICK;
+          break;
+          case sPRE_OWN_PENALTY:
+          mBsInfo.gamestate = sOWN_PENALTY;
+          break;
+          case sPRE_THEIR_PENALTY:
+          mBsInfo.gamestate = sTHEIR_PENALTY;
+          break;
+          case sPRE_OWN_THROWIN:
+          mBsInfo.gamestate = sOWN_THROWIN;
+          break;
+          case sPRE_THEIR_THROWIN:
+          mBsInfo.gamestate = sTHEIR_THROWIN;
+          break;
+          case sPRE_OWN_CORNER:
+          mBsInfo.gamestate = sOWN_CORNER;
+          break;
+          case sPRE_THEIR_CORNER:
+          mBsInfo.gamestate = sTHEIR_CORNER;
+          break;
+          default:
+          mBsInfo.gamestate = sSTOPPED;
+          break;
+        }
         timeOwnGameBall->start(7000);
-    } else if(command == "K" || command == "k"){ // kickoff
+    }
+    else if(command == "K" || command == "k")
+    { // kickoff
         if(isCyan && command[0].isUpper()) mBsInfo.gamestate = sPRE_OWN_KICKOFF;
         else if(!isCyan && command[0].isLower()) mBsInfo.gamestate = sPRE_OWN_KICKOFF;
         else mBsInfo.gamestate = sPRE_THEIR_KICKOFF;
@@ -617,6 +706,8 @@ void MainWindow::onRefBoxData()
         else if(!isCyan && command[0].isLower()) mBsInfo.gamestate = sPRE_OWN_CORNER;
         else mBsInfo.gamestate = sPRE_THEIR_CORNER;
     }else mBsInfo.gamestate = sSTOPPED;
+
+    qDebug() <<  mBsInfo.gamestate;
 }
 
 void MainWindow::onRefBoxDisconnection()
@@ -666,6 +757,6 @@ void MainWindow::set_auto_roles(int id)
 
 void MainWindow::setOwnGameBall()
 {
-    mBsInfo.gamestate = sGAME_OWN_BALL;
+    if(mBsInfo.gamestate!=sSTOPPED) mBsInfo.gamestate = sGAME_OWN_BALL;
     timeOwnGameBall->stop();
 }

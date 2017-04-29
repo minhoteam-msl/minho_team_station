@@ -171,6 +171,10 @@ private:
     bool auto_role_vec[NROBOTS];
 
     QTimer *timeOwnGameBall;
+
+    int iGOALKEEPER,iSUP_STRIKER,iSTRIKER,iDEFENDERL,iDEFENDERR;
+
+    bool preGame;
 };
 
 #endif // MAINWINDOW_H
