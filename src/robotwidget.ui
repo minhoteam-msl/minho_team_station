@@ -437,7 +437,7 @@
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout">
-     <item row="14" column="0">
+     <item row="15" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_6">
        <item>
         <widget class="QLabel" name="label_5">
@@ -486,7 +486,7 @@
        </item>
       </layout>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QLabel" name="label_3">
@@ -545,7 +545,7 @@
        </item>
       </layout>
      </item>
-     <item row="11" column="0">
+     <item row="12" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
         <widget class="QLabel" name="label_6">
@@ -594,7 +594,7 @@
        </item>
       </layout>
      </item>
-     <item row="6" column="0">
+     <item row="7" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_5">
        <item>
         <widget class="QLabel" name="label_2">
@@ -643,7 +643,7 @@
        </item>
       </layout>
      </item>
-     <item row="12" column="0">
+     <item row="13" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QLabel" name="label_4">
@@ -692,7 +692,7 @@
        </item>
       </layout>
      </item>
-     <item row="15" column="0">
+     <item row="16" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
         <widget class="QLabel" name="label_7">
@@ -741,7 +741,7 @@
        </item>
       </layout>
      </item>
-     <item row="16" column="0">
+     <item row="17" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_8">
        <item>
         <widget class="QLabel" name="label_8">
@@ -790,7 +790,7 @@
        </item>
       </layout>
      </item>
-     <item row="10" column="0">
+     <item row="11" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QLabel" name="label">
@@ -839,7 +839,7 @@
        </item>
       </layout>
      </item>
-     <item row="4" column="0">
+     <item row="5" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_9">
        <item>
         <widget class="QPushButton" name="bt_reloc">
@@ -893,7 +893,7 @@
        </item>
       </layout>
      </item>
-     <item row="13" column="0">
+     <item row="14" column="0">
       <widget class="Line" name="line_3">
        <property name="lineWidth">
         <number>5</number>
@@ -903,7 +903,7 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
+     <item row="10" column="0">
       <widget class="Line" name="line_2">
        <property name="lineWidth">
         <number>5</number>
@@ -913,7 +913,7 @@
        </property>
       </widget>
      </item>
-     <item row="7" column="0">
+     <item row="8" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_12">
        <item>
         <widget class="QLabel" name="label_9">
@@ -954,7 +954,7 @@
        </item>
       </layout>
      </item>
-     <item row="5" column="0">
+     <item row="6" column="0">
       <widget class="Line" name="line">
        <property name="lineWidth">
         <number>5</number>
@@ -964,7 +964,7 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="0">
+     <item row="9" column="0">
       <layout class="QHBoxLayout" name="horizontalLayout_13">
        <item>
         <widget class="QLabel" name="label_10">
@@ -1000,6 +1000,17 @@
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="3" column="0">
+      <layout class="QHBoxLayout" name="horizontalLayout_11">
+       <item>
+        <widget class="QPushButton" name="bt_auto_roles">
+         <property name="text">
+          <string>Auto ON</string>
          </property>
         </widget>
        </item>
