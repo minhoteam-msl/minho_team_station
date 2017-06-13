@@ -15,7 +15,7 @@
 
 Multicastpp::Multicastpp()
 {
-    socket_fd = openSocket("wlan0",1);
+    socket_fd = openSocket("eth0",1);
 }
 
 int if_NameToIndex(std::string ifname, char *address)

@@ -609,3 +609,8 @@ void MainWindow::onResetIMURequest(int id)
 {
     mBsInfo.requests[id-1] = 2;
 }
+
+void MainWindow::on_pushButton_clicked()
+{
+    mBsInfo.gamestate = sGAME_OWN_BALL;
+}

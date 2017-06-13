@@ -1128,6 +1128,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="pushButton">
+          <property name="text">
+           <string>Game</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="bt_conref">
           <property name="text">
            <string>Reconnect to RefBox</string>

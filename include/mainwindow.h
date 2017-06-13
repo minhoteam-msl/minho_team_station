@@ -110,6 +110,8 @@ private slots:
     void onResetIMURequest(int id);
     ///  \function to merge ball pose
     void merge_ball_pose();
+    void on_pushButton_clicked();
+
 signals:
     void newRobotInformationReceived(int agent_id);
 private:
